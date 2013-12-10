@@ -22,6 +22,7 @@
 # include <boost/mpl/vector.hpp>
 
 # include <roboptim/core/solver.hh>
+# include <roboptim/core/solver-state.hh>
 # include <roboptim/core/sum-of-c1-squares.hh>
 
 #include <unsupported/Eigen/NonLinearOptimization>
@@ -37,8 +38,7 @@ namespace roboptim {
     {
     public:
       /// \brief Parent type
-      typedef Solver<SumOfC1Squares, boost::mpl::vector<> >
-      parent_t;
+      typedef Solver<SumOfC1Squares, boost::mpl::vector<> > parent_t;
       /// \brief Cost function type
       typedef problem_t::function_t function_t;
       /// \brief type of result
@@ -48,55 +48,86 @@ namespace roboptim {
       /// \brief Size type
       typedef Function::size_type size_type;
 
+      /// \brief Solver state
+      typedef SolverState<parent_t::problem_t> solverState_t;
+
+      /// \brief RobOptim callback
+      typedef parent_t::callback_t callback_t;
+
       /// \brief Constructot by problem
       explicit SolverWithJacobian (const problem_t& problem);
       virtual ~SolverWithJacobian () throw ();
       /// \brief Solve the optimization problem
       virtual void solve () throw ();
 
-      /// Number of variables
+      /// \brief Return the number of variables.
       size_type n () const
       {
 	return n_;
       }
 
-      /// Number of functions
+      /// \brief Return the number of functions.
       size_type m () const
       {
 	return m_;
       }
 
-      /// Get parameter
+      /// \brief Get the optimization parameters.
       Function::argument_t& parameter ()
       {
 	return x_;
       }
 
+      /// \brief Get the optimization parameters.
       const Function::argument_t& parameter () const
       {
 	return x_;
       }
 
-      /// Get cost
+      /// \brief Get the cost function.
       boost::shared_ptr <const DifferentiableFunction> cost () const
       {
         return cost_;
       }
 
+      /// \brief Set the callback called at each iteration.
+      virtual void
+      setIterationCallback (callback_t callback) throw (std::runtime_error)
+      {
+        callback_ = callback;
+      }
+
+      /// \brief Get the callback called at each iteration.
+      const callback_t& callback () const throw ()
+      {
+        return callback_;
+      }
+
     private:
-      /// Number of variables
+      /// \brief Minimize the cost function.
+      template <typename U>
+      Eigen::LevenbergMarquardtSpace::Status minimize (U& lm) throw ();
+
+    private:
+      /// \brief Number of variables
       size_type n_;
-      /// Dimension of the cost function
+      /// \brief Dimension of the cost function
       size_type m_;
 
-      /// Parameter of the function
+      /// \brief Parameter of the function
       Function::argument_t x_;
 
-      /// Reference to cost function
+      /// \brief Reference to cost function
       boost::shared_ptr <const DifferentiableFunction> cost_;
 
-      /// Map of <optimization status, warning messages>
+      /// \brief Map of <optimization status, warning messages>
       std::map<Eigen::LevenbergMarquardtSpace::Status,std::string> warning_map_;
+
+      /// \brief State of the solver at each iteration
+      solverState_t solverState_;
+
+      /// \brief Intermediate callback (called at each end of iteration).
+      callback_t callback_;
     }; // class SolverWithJacobian
   } // namespace eigen
 } // namespace roboptim
