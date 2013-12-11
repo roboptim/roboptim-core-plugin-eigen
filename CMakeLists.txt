@@ -36,6 +36,7 @@ SET(${PROJECT_NAME}_HEADERS
   )
 
 # Search for dependencies.
+SET(BOOST_COMPONENTS date_time filesystem system unit_test_framework)
 SEARCH_FOR_BOOST()
 
 ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.2.0")

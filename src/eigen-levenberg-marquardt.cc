@@ -108,12 +108,12 @@ namespace roboptim
 
 
     SolverWithJacobian::SolverWithJacobian (const problem_t& problem) :
-      Solver <SumOfC1Squares, boost::mpl::vector<> >
-      (problem),
+      parent_t (problem),
       n_ (problem.function ().baseFunction ()->inputSize ()),
       m_ (problem.function ().baseFunction ()->outputSize ()),
       x_ (n_),
-      cost_ (problem.function ().baseFunction ())
+      cost_ (problem.function ().baseFunction ()),
+      solverState_ (problem)
     {
       // Initialize this class parameters
       x_.setZero ();
@@ -164,6 +164,27 @@ namespace roboptim
     break;
 
 
+    template <typename U>
+    Eigen::LevenbergMarquardtSpace::Status
+    SolverWithJacobian::minimize (U& lm) throw ()
+    {
+      LevenbergMarquardtSpace::Status status = lm.minimizeInit (x_);
+      if (status == LevenbergMarquardtSpace::ImproperInputParameters)
+        return status;
+      do {
+        status = lm.minimizeOneStep (x_);
+        if (!callback_.empty ())
+          {
+            solverState_.x() = x_;
+            solverState_.cost () = lm.fnorm * lm.fnorm;
+            callback_ (problem (), solverState_);
+          }
+      } while (status == LevenbergMarquardtSpace::Running);
+
+      return status;
+    }
+
+
     void SolverWithJacobian::solve () throw ()
     {
       // Load optional starting point
@@ -175,7 +196,7 @@ namespace roboptim
       using namespace Eigen::LevenbergMarquardtSpace;
       solver_functor<SolverWithJacobian> functor (*this);
       LevenbergMarquardt<solver_functor<SolverWithJacobian> > lm (functor);
-      Status info = lm.minimize (x_);
+      Status info = minimize (lm);
 
       switch (info)
         {
