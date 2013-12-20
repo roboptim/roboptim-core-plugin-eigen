@@ -16,42 +16,18 @@
 # roboptim-core-plugin-eigen  If not, see
 # <http://www.gnu.org/licenses/>.
 
+# Prepare test suite
 SET(PLUGIN_PATH "${CMAKE_BINARY_DIR}/src")
+INCLUDE(shared-tests/tests.cmake)
 
+# RobOptim test problems
 SET(SOLVER_NAME "eigen-levenberg-marquardt")
 SET(FUNCTION_TYPE ::roboptim::EigenMatrixDense)
-SET(COST_FUNCTION_TYPE ::roboptim::GenericFunction)
+SET(PROGRAM_SUFFIX "")
+SET(COST_FUNCTION_TYPE ::roboptim::GenericDifferentiableFunction)
 SET(CONSTRAINT_TYPE_1 False)
 SET(CONSTRAINT_TYPE_2 False)
-SET(PROGRAM_SUFFIX "")
-
-# Make sure local headers are found
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/tests)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/tests)
-
-# Add Boost path to include directories.
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-
-# Make Boost.Test generates the main function in test cases.
-ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MAIN)
-
-SET(COMMON_HEADERS
-  ${HEADERS}
-  shared-tests/common.hh
-  )
-
-ADD_EXECUTABLE(distance-to-sphere
-  ${CMAKE_SOURCE_DIR}/tests/shared-tests/distance-to-sphere.cc
-  ${COMMON_HEADERS}
-  ${CMAKE_SOURCE_DIR}/src/eigen-levenberg-marquardt.cc
-  )
-
-SET_TARGET_PROPERTIES(distance-to-sphere
-    PROPERTIES COMPILE_FLAGS
-    "-DSOLVER_NAME='\"${SOLVER_NAME}\"' -DPLUGIN_PATH='\"${PLUGIN_PATH}\"' -DFUNCTION_TYPE=${FUNCTION_TYPE} -DCOST_FUNCTION_TYPE=${COST_FUNCTION_TYPE} ${CONSTRAINT_TYPE_1_STR} ${CONSTRAINT_TYPE_2_STR} -DTESTS_DATA_DIR='\"${CMAKE_CURRENT_SOURCE_DIR}\"' -DLOG_FILENAME='\"${NAME}${PROGRAM_SUFFIX}.log\"' ")
-PKG_CONFIG_USE_DEPENDENCY(distance-to-sphere roboptim-core)
-TARGET_LINK_LIBRARIES(distance-to-sphere ${Boost_LIBRARIES})
-ADD_TEST(distance-to-sphere ${RUNTIME_OUTPUT_DIRECTORY}/distance-to-sphere)
+BUILD_ROBOPTIM_PROBLEMS()
 
 
 
