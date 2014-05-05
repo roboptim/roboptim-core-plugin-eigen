@@ -147,7 +147,7 @@ namespace roboptim
          "computation.");
     }
 
-    SolverWithJacobian::~SolverWithJacobian () throw ()
+    SolverWithJacobian::~SolverWithJacobian ()
     {
     }
 
@@ -166,7 +166,7 @@ namespace roboptim
 
     template <typename U>
     Eigen::LevenbergMarquardtSpace::Status
-    SolverWithJacobian::minimize (U& lm) throw ()
+    SolverWithJacobian::minimize (U& lm)
     {
       LevenbergMarquardtSpace::Status status = lm.minimizeInit (x_);
       if (status == LevenbergMarquardtSpace::ImproperInputParameters)
@@ -185,7 +185,7 @@ namespace roboptim
     }
 
 
-    void SolverWithJacobian::solve () throw ()
+    void SolverWithJacobian::solve ()
     {
       // Load optional starting point
       if (problem ().startingPoint ())
