@@ -39,7 +39,7 @@ SET(BOOST_COMPONENTS date_time filesystem system unit_test_framework)
 SEARCH_FOR_BOOST()
 
 ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.2.0")
-ADD_REQUIRED_DEPENDENCY("roboptim-core >= 3.0")
+ADD_REQUIRED_DEPENDENCY("roboptim-core >= 3.1")
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(tests)
