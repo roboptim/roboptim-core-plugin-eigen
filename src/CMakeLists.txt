@@ -17,7 +17,8 @@
 # <http://www.gnu.org/licenses/>.
 
 # Define the directory where plug-ins will be installed.
-ADD_DEFINITIONS(-DPLUGIN_PATH="${LIBRARY_OUTPUT_PATH}")
+GET_FILENAME_COMPONENT(RELPLUGINDIR ${ROBOPTIM_CORE_PLUGINDIR} NAME)
+SET(PLUGINDIR ${CMAKE_INSTALL_LIBDIR}/${RELPLUGINDIR})
 
 MACRO(EIGEN_PLUGIN NAME)
   ADD_LIBRARY(roboptim-core-plugin-${NAME} MODULE ${NAME}.cc ${HEADERS})
@@ -26,7 +27,7 @@ MACRO(EIGEN_PLUGIN NAME)
     PREFIX ""
     SOVERSION 3.0.0)
   INSTALL(TARGETS roboptim-core-plugin-${NAME}
-    DESTINATION ${ROBOPTIM_CORE_PLUGINDIR})
+    DESTINATION ${PLUGINDIR})
 ENDMACRO()
 
 # Levenberg-Marquardt solver
