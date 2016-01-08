@@ -19,11 +19,13 @@
 #ifndef ROBOPTIM_CORE_PLUGIN_EIGEN_EIGEN_LEVENBERG_MARQUARDT_HH
 # define ROBOPTIM_CORE_PLUGIN_EIGEN_EIGEN_LEVENBERG_MARQUARDT_HH
 
+# include <map>
+# include <string>
+
 # include <boost/mpl/vector.hpp>
 
 # include <roboptim/core/solver.hh>
 # include <roboptim/core/solver-state.hh>
-# include <roboptim/core/sum-of-c1-squares.hh>
 
 #include <unsupported/Eigen/NonLinearOptimization>
 
@@ -33,12 +35,11 @@ namespace roboptim {
     ///
     /// This solver tries to minimize the euclidean norm of a vector valued
     /// function.
-    class SolverWithJacobian :
-      public Solver<SumOfC1Squares, boost::mpl::vector<> >
+    class SolverWithJacobian : public Solver<EigenMatrixDense>
     {
     public:
       /// \brief Parent type
-      typedef Solver<SumOfC1Squares, boost::mpl::vector<> > parent_t;
+      typedef Solver<EigenMatrixDense> parent_t;
       /// \brief Cost function type
       typedef problem_t::function_t function_t;
       /// \brief type of result
@@ -57,6 +58,7 @@ namespace roboptim {
       /// \brief Constructot by problem
       explicit SolverWithJacobian (const problem_t& problem);
       virtual ~SolverWithJacobian ();
+
       /// \brief Solve the optimization problem
       virtual void solve ();
 
@@ -84,12 +86,6 @@ namespace roboptim {
 	return x_;
       }
 
-      /// \brief Get the cost function.
-      boost::shared_ptr <const DifferentiableFunction> cost () const
-      {
-        return cost_;
-      }
-
       /// \brief Set the callback called at each iteration.
       virtual void
       setIterationCallback (callback_t callback)
@@ -103,12 +99,24 @@ namespace roboptim {
         return callback_;
       }
 
+      const boost::shared_ptr<const DifferentiableFunction> baseCost () const
+      {
+        return baseCost_;
+      }
+
     private:
       /// \brief Minimize the cost function.
       template <typename U>
       Eigen::LevenbergMarquardtSpace::Status minimize (U& lm);
 
+      /// \brief Initialize the solver.
+      /// \param problem problem.
+      void initialize (const problem_t& problem);
+
     private:
+      /// \brief Base cost function.
+      boost::shared_ptr<const DifferentiableFunction> baseCost_;
+
       /// \brief Number of variables
       size_type n_;
       /// \brief Dimension of the cost function
@@ -116,9 +124,6 @@ namespace roboptim {
 
       /// \brief Parameter of the function
       Function::argument_t x_;
-
-      /// \brief Reference to cost function
-      boost::shared_ptr <const DifferentiableFunction> cost_;
 
       /// \brief Map of <optimization status, warning messages>
       std::map<Eigen::LevenbergMarquardtSpace::Status,std::string> warning_map_;

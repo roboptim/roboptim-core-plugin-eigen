@@ -24,6 +24,8 @@
 #include <roboptim/core/function.hh>
 #include <roboptim/core/problem.hh>
 #include <roboptim/core/solver-error.hh>
+#include <roboptim/core/sum-of-c1-squares.hh>
+
 #include <roboptim/core/plugin/eigen/eigen-levenberg-marquardt.hh>
 
 #include <unsupported/Eigen/NonLinearOptimization>
@@ -72,15 +74,15 @@ namespace roboptim
       typedef Functor<double> FunctorType;
 
       solver_functor (S& solver)
-	: Functor<double> (solver.problem().function ().baseFunction ()->inputSize (),
-	                   solver.problem().function ().baseFunction ()->outputSize ()),
+	: Functor<double> (solver.baseCost ()->inputSize (),
+	                   solver.baseCost ()->outputSize ()),
 	  solver_ (solver)
       {
       }
 
       int operator() (const FunctorType::InputType& x, FunctorType::ValueType& fvec) const
       {
-        fvec = (*solver_.cost ())(x);
+        fvec = (*solver_.baseCost ())(x);
 
         return 0;
       }
@@ -89,7 +91,7 @@ namespace roboptim
       {
 	::roboptim::Function::size_type row =
           static_cast< ::roboptim::Function::size_type> (rownb) - 2;
-        jac_row = solver_.cost ()->gradient (x, row);
+        jac_row = solver_.baseCost ()->gradient (x, row);
 
         return 0;
       }
@@ -97,7 +99,7 @@ namespace roboptim
       int df (const FunctorType::InputType& x, FunctorType::JacobianType& jac)
       {
 	solver_.parameter () = x;
-        jac = solver_.cost ()->jacobian (x);
+        jac = solver_.baseCost ()->jacobian (x);
 
         return 0;
       }
@@ -109,14 +111,14 @@ namespace roboptim
 
     SolverWithJacobian::SolverWithJacobian (const problem_t& problem) :
       parent_t (problem),
-      n_ (problem.function ().baseFunction ()->inputSize ()),
-      m_ (problem.function ().baseFunction ()->outputSize ()),
-      x_ (n_),
-      cost_ (problem.function ().baseFunction ()),
+      baseCost_ (),
+      n_ (),
+      m_ (),
+      x_ (),
       solverState_ (problem)
     {
       // Initialize this class parameters
-      x_.setZero ();
+      initialize (problem);
 
       // Load <Status, warning message> map
       using namespace Eigen::LevenbergMarquardtSpace;
@@ -163,6 +165,25 @@ namespace roboptim
     }                                                                   \
     break;
 
+    void SolverWithJacobian::initialize (const problem_t& pb)
+    {
+      const SumOfC1Squares* cost
+        = dynamic_cast<const SumOfC1Squares*> (&pb.function ());
+
+      if (!cost)
+      {
+        throw std::runtime_error ("the eigen-levenberg-marquardt plugin expects"
+                                  " a SumOfC1Squares cost function");
+      }
+
+      baseCost_ = cost->baseFunction ();
+
+      n_ = baseCost_->inputSize ();
+      m_ = baseCost_->outputSize ();
+
+      x_.resize (n_);
+      x_.setZero ();
+    }
 
     template <typename U>
     Eigen::LevenbergMarquardtSpace::Status
