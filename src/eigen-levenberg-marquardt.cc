@@ -18,6 +18,7 @@
 
 #include <cstring>
 #include <map>
+#include <stdexcept>
 
 #include <boost/assign/list_of.hpp>
 
