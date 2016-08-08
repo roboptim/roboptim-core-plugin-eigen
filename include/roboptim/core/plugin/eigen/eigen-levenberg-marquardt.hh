@@ -112,6 +112,7 @@ namespace roboptim {
       /// \brief Initialize the solver.
       /// \param problem problem.
       void initialize (const problem_t& problem);
+      void initializeParameters();
 
     private:
       /// \brief Base cost function.
