@@ -28,6 +28,7 @@
 #include <roboptim/core/sum-of-c1-squares.hh>
 
 #include <roboptim/core/plugin/eigen/eigen-levenberg-marquardt.hh>
+#include <roboptim/core/plugin/eigen/config.hh>
 
 #include <unsupported/Eigen/NonLinearOptimization>
 
@@ -120,6 +121,7 @@ namespace roboptim
     {
       // Initialize this class parameters
       initialize (problem);
+      initializeParameters();
 
       // Load <Status, warning message> map
       using namespace Eigen::LevenbergMarquardtSpace;
@@ -186,6 +188,25 @@ namespace roboptim
       x_.setZero ();
     }
 
+#define DEFINE_PARAMETER(KEY, DESCRIPTION, VALUE)     \
+  do                                                  \
+  {                                                   \
+    this->parameters_[KEY].description = DESCRIPTION; \
+    this->parameters_[KEY].value = VALUE;             \
+  } while (0)
+
+    void SolverWithJacobian::initializeParameters()
+    {
+      this->parameters_.clear();
+
+      DEFINE_PARAMETER("eigen.factor", "Sets the step bound for the diagonal shift", 100.);
+      DEFINE_PARAMETER("eigen.maxfev", "Sets the maximum number of function evaluation", 400);
+      DEFINE_PARAMETER("eigen.ftol", "Sets the tolerance for the norm of the vector function", std::sqrt(NumTraits<parent_t::problem_t::value_type>::epsilon()));
+      DEFINE_PARAMETER("eigen.xtol", "Sets the tolerance for the norm of the solution vector", std::sqrt(NumTraits<parent_t::problem_t::value_type>::epsilon()));
+      DEFINE_PARAMETER("eigen.gtol", "Sets the tolerance for the norm of the gradient of the error vector", 0.);
+      DEFINE_PARAMETER("eigen.epsilon", "Sets the error precision", 0.);
+    }
+
     template <typename U>
     Eigen::LevenbergMarquardtSpace::Status
     SolverWithJacobian::minimize (U& lm)
@@ -218,6 +239,15 @@ namespace roboptim
       using namespace Eigen::LevenbergMarquardtSpace;
       solver_functor<SolverWithJacobian> functor (*this);
       LevenbergMarquardt<solver_functor<SolverWithJacobian> > lm (functor);
+
+      // Custom parameters
+      lm.parameters.factor = boost::get<double>(this->parameters_["eigen.factor"].value);
+      lm.parameters.maxfev = boost::get<int>(this->parameters_["eigen.maxfev"].value);
+      lm.parameters.ftol = boost::get<double>(this->parameters_["eigen.ftol"].value);
+      lm.parameters.xtol = boost::get<double>(this->parameters_["eigen.xtol"].value);
+      lm.parameters.gtol = boost::get<double>(this->parameters_["eigen.gtol"].value);
+      lm.parameters.epsfcn = boost::get<double>(this->parameters_["eigen.epsilon"].value);
+
       Status info = minimize (lm);
 
       switch (info)
@@ -249,27 +279,27 @@ extern "C"
   using namespace roboptim::eigen;
   typedef SolverWithJacobian::parent_t solver_t;
 
-  ROBOPTIM_DLLEXPORT unsigned getSizeOfProblem ();
-  ROBOPTIM_DLLEXPORT const char* getTypeIdOfConstraintsList ();
-  ROBOPTIM_DLLEXPORT solver_t* create (const SolverWithJacobian::problem_t& pb);
-  ROBOPTIM_DLLEXPORT void destroy (solver_t* p);
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT unsigned getSizeOfProblem ();
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT const char* getTypeIdOfConstraintsList ();
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT solver_t* create (const SolverWithJacobian::problem_t& pb);
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT void destroy (solver_t* p);
 
-  ROBOPTIM_DLLEXPORT unsigned getSizeOfProblem ()
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT unsigned getSizeOfProblem ()
   {
     return sizeof (solver_t::problem_t);
   }
 
-  ROBOPTIM_DLLEXPORT const char* getTypeIdOfConstraintsList ()
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT const char* getTypeIdOfConstraintsList ()
   {
     return typeid (solver_t::problem_t::constraintsList_t).name ();
   }
 
-  ROBOPTIM_DLLEXPORT solver_t* create (const SolverWithJacobian::problem_t& pb)
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT solver_t* create (const SolverWithJacobian::problem_t& pb)
   {
     return new SolverWithJacobian (pb);
   }
 
-  ROBOPTIM_DLLEXPORT void destroy (solver_t* p)
+  ROBOPTIM_CORE_PLUGIN_EIGEN_DLLEXPORT void destroy (solver_t* p)
   {
     delete p;
   }
