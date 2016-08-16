@@ -149,7 +149,10 @@ namespace roboptim
          "the jacobian to machine precision.")
         (UserAsked,
          "Error in user-implemented evaluation or gradient "
-         "computation.");
+         "computation.")
+        // C++11 workaround for Boost bug
+        .convert_to_container<std::map<Eigen::LevenbergMarquardtSpace::Status,
+                              std::string> >();
     }
 
     SolverWithJacobian::~SolverWithJacobian ()
