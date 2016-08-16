@@ -1,7 +1,7 @@
 language: cpp
 env:
   global:
-  - APT_DEPENDENCIES="doxygen doxygen-latex libltdl-dev libboost-all-dev liblog4cxx10-dev libeigen3-dev"
+  - APT_DEPENDENCIES="cmake cmake-data doxygen libltdl-dev libboost-all-dev liblog4cxx10-dev"
   - GIT_DEPENDENCIES="roboptim/roboptim-core"
   - DEBSIGN_KEYID=5AE5CD75
   - PPA_URI="roboptim/ppa"
@@ -22,8 +22,9 @@ branches:
   - dev
   - debian
 script:
-- export LD_LIBRARY_PATH=`pkg-config --variable=plugindir roboptim-core`:$LD_LIBRARY_PATH;
-- if [ "${COVERITY_SCAN_BRANCH}" != "1" ]; then ./.travis/run build; fi
+  - export LD_LIBRARY_PATH=`pkg-config --variable=plugindir roboptim-core`:$LD_LIBRARY_PATH;
+  - if [ "${ENABLE_CXX11}" == "1" ]; then export CMAKE_ADDITIONAL_OPTIONS="-DUSE_CXX11:BOOL=ON -DROBOPTIM_PRECOMPILE_DENSE_SPARSE:BOOL=ON ${CMAKE_ADDITIONAL_OPTIONS}"; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != "1" ]; then ./.travis/run build; fi
 after_success:
   - ./.travis/run after_success
   - codecov --gcov-root=/tmp/_ci/build
@@ -46,12 +47,15 @@ matrix:
     - os: linux
       dist: trusty
       compiler: clang
+      env: ENABLE_CXX11=1
     - os: linux
       dist: precise
       compiler: gcc
+      env: MASTER_PPA="george-edison55/precise-backports"
     - os: linux
       dist: precise
       compiler: clang
+      env: MASTER_PPA="george-edison55/precise-backports"
     - os: osx
       compiler: clang
     - os: osx
@@ -60,7 +64,7 @@ matrix:
 addons:
   coverity_scan:
     project:
-      name: "roboptim/roboptim-core-plugin-ipopt"
+      name: "roboptim/roboptim-core-plugin-eigen"
       description: "Build submitted via Travis CI"
     notification_email: roboptim@googlegroups.com
     build_command_prepend: ". .travis/common.sh && mkdir coverity && cd coverity && cmake .."
