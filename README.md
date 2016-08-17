@@ -11,3 +11,5 @@ This package wraps Eigen's implementation of Levenberg Marquardt algorithm.
 
 For general information about the project, please refer to its
 homepage: https://github.com/roboptim/roboptim-core-plugin-eigen
+
+[badge-license]: https://img.shields.io/badge/license-LGPL_3-green.svg
