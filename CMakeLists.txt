@@ -25,6 +25,7 @@ INCLUDE(cmake/eigen.cmake)
 SET(PROJECT_NAME roboptim-core-plugin-eigen)
 SET(PROJECT_DESCRIPTION "Non linear least-square optimization using Eigen's Levenberg Marquardt algorithm.")
 SET(PROJECT_URL "http://github.com/roboptim/roboptim-core-plugin-eigen")
+SET(PROJECT_DEBUG_POSTFIX "_d")
 
 SET(PKG_CONFIG_ADDITIONAL_VARIABLES plugindir ${PKG_CONFIG_ADDITIONAL_VARIABLES})
 SETUP_PROJECT()
@@ -39,7 +40,7 @@ SET(BOOST_COMPONENTS date_time filesystem system unit_test_framework)
 SEARCH_FOR_BOOST()
 
 ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.2.0")
-ADD_REQUIRED_DEPENDENCY("roboptim-core >= 3.2")
+ADD_REQUIRED_DEPENDENCY("roboptim-core >= 3.2" "roboptim-core_d >= 3.2")
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(tests)
