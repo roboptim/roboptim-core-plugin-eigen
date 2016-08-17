@@ -159,18 +159,6 @@ namespace roboptim
     {
     }
 
-    // Utility macro to print result with warning message
-#define LOAD_RESULT_WARNINGS(STATUS)                                    \
-    case STATUS:                                                        \
-    {                                                                   \
-      ResultWithWarnings result (n_, 1);                                \
-      result.x = x_;                                                    \
-      result.value = problem ().function () (result.x);                 \
-      result.warnings.push_back (SolverWarning (warning_map_[STATUS])); \
-      result_ = result;                                                 \
-    }                                                                   \
-    break;
-
     void SolverWithJacobian::initialize (const problem_t& pb)
     {
       const SumOfC1Squares* cost
@@ -259,15 +247,24 @@ namespace roboptim
           result_ = SolverError ("Improper input parameters");
           break;
 
-        LOAD_RESULT_WARNINGS (RelativeReductionTooSmall)
-        LOAD_RESULT_WARNINGS (RelativeErrorTooSmall)
-        LOAD_RESULT_WARNINGS (RelativeErrorAndReductionTooSmall)
-        LOAD_RESULT_WARNINGS (CosinusTooSmall)
-        LOAD_RESULT_WARNINGS (TooManyFunctionEvaluation)
-        LOAD_RESULT_WARNINGS (FtolTooSmall)
-        LOAD_RESULT_WARNINGS (XtolTooSmall)
-        LOAD_RESULT_WARNINGS (GtolTooSmall)
-        LOAD_RESULT_WARNINGS (UserAsked)
+        // Warnings
+        case RelativeReductionTooSmall:
+        case RelativeErrorTooSmall:
+        case RelativeErrorAndReductionTooSmall:
+        case CosinusTooSmall:
+        case TooManyFunctionEvaluation:
+        case FtolTooSmall:
+        case XtolTooSmall:
+        case GtolTooSmall:
+        case UserAsked:
+        {
+          ResultWithWarnings result (n_, 1);
+          result.x = x_;
+          result.value = problem ().function () (result.x);
+          result.warnings.push_back (SolverWarning (warning_map_[info]));
+          result_ = result;
+        }
+        break;
 
         default:
           result_ = SolverError ("Return value not documented");
