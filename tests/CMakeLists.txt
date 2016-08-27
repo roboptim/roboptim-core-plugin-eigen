@@ -27,5 +27,8 @@ SET(PROGRAM_SUFFIX "")
 SET(COST_FUNCTION_TYPE ::roboptim::GenericDifferentiableFunction)
 SET(CONSTRAINT_TYPE_1 False)
 SET(CONSTRAINT_TYPE_2 False)
+
+# Only SumOfC1Squares
+SET(ROBOPTIM_PROBLEMS distance-to-sphere)
 BUILD_ROBOPTIM_PROBLEMS()
 

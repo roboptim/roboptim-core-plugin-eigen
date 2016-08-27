@@ -258,7 +258,7 @@ namespace roboptim
         case GtolTooSmall:
         case UserAsked:
         {
-          ResultWithWarnings result (n_, 1);
+          Result result (n_, 1);
           result.x = x_;
           result.value = problem ().function () (result.x);
           result.warnings.push_back (SolverWarning (warning_map_[info]));
