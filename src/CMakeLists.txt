@@ -28,8 +28,11 @@ MACRO(EIGEN_PLUGIN NAME)
   ADD_LIBRARY(roboptim-core-plugin-${NAME} MODULE ${NAME}.cc ${HEADERS})
   PKG_CONFIG_USE_DEPENDENCY(roboptim-core-plugin-${NAME} roboptim-core)
   SET_TARGET_PROPERTIES(roboptim-core-plugin-${NAME} PROPERTIES
-    PREFIX ""
-    SOVERSION 3.2.0)
+    PREFIX "")
+  IF(NOT APPLE)
+    SET_TARGET_PROPERTIES(roboptim-core-plugin-${NAME}
+      PROPERTIES VERSION 3.2.0 SOVERSION 3)
+  ENDIF()
   INSTALL(TARGETS roboptim-core-plugin-${NAME}
     DESTINATION ${PLUGINDIR})
 ENDMACRO()
