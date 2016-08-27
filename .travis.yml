@@ -22,6 +22,7 @@ branches:
   only:
   - master
   - dev
+  - travis
   - debian
 script:
   - export LD_LIBRARY_PATH=`pkg-config --variable=plugindir roboptim-core`:$LD_LIBRARY_PATH;
